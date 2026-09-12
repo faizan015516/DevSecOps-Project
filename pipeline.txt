@@ -101,6 +101,21 @@ pipeline {
                 '''
             }
         }
+
+        stage('Update Manifest & Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh '''
+                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yml
+                        git config user.email "ci@bot.com"
+                        git config user.name "jenkins-ci"
+                        git add deployment.yml
+                        git commit -m "Deploy ${IMAGE_NAME}:${IMAGE_TAG}"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/faizan015516/DevSecOps-Project.git main
+                    '''
+                }
+            }
+        }
     }
 
     post {
